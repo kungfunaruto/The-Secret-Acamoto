@@ -1,3 +1,11 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Will you be my girlfriend?</title>
+</head>
+<body style="margin:0;">
 <div id="eve-proposal-root">
   <style>
     #eve-proposal-root {
@@ -272,6 +280,17 @@
       const card = root.querySelector('#mainCard');
       const roamZone = root.querySelector('#roamZone');
 
+      const STORAGE_KEY = 'eve_proposal_answered';
+
+      // safe wrappers — sessionStorage can throw in some sandboxed / private
+      // browsing contexts, so never let it break the page
+      function saveAnswered() {
+        try { sessionStorage.setItem(STORAGE_KEY, 'yes'); } catch (e) {}
+      }
+      function hasAnswered() {
+        try { return sessionStorage.getItem(STORAGE_KEY) === 'yes'; } catch (e) { return false; }
+      }
+
       // floating hearts background
       const hearts = ['💗','💕','💖','🌸','💐'];
       for (let i = 0; i < 12; i++) {
@@ -384,13 +403,30 @@
         }
       }
 
-      yesBtn.addEventListener('click', function() {
+      function showCelebrateScreen(withConfetti) {
         askScreen.style.display = 'none';
         celebrateScreen.style.display = 'block';
         card.classList.add('celebrating');
-        launchConfetti();
-        setTimeout(launchConfetti, 450);
+        if (withConfetti) {
+          launchConfetti();
+          setTimeout(launchConfetti, 450);
+        }
+      }
+
+      yesBtn.addEventListener('click', function() {
+        saveAnswered();
+        showCelebrateScreen(true);
       });
+
+      // on page load: if this tab's session already has a "yes" answer,
+      // jump straight to the celebrate screen (no confetti replay).
+      // closing the tab/browser clears sessionStorage automatically,
+      // so a fresh visit always starts back at the question.
+      if (hasAnswered()) {
+        showCelebrateScreen(false);
+      }
     })();
   </script>
 </div>
+</body>
+</html>
